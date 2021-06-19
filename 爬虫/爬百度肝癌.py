@@ -13,6 +13,7 @@ headers = {
 }
 
 response = requests.get(url=link_url, headers=headers)
+
 tree = etree.HTML(response.content.decode("UTF-8"))
 rootxp = '//*[@id="richTextContainer"]/div' #根目录，大题目
 xp = '//*[@id="richTextContainer"]/div[1]/div[1]'
