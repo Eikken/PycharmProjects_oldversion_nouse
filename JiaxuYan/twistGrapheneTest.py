@@ -11,6 +11,8 @@
 '''
 
 import math
+import random
+
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.spatial import distance
@@ -49,7 +51,7 @@ def calShadow(circle1, circle2):
 
 
 def calTotal(initMox, bs=1):
-    circle = Circle(0, 0, 0.07*bs)
+    circle = Circle(0, 0, 0.07 * bs)
     pointsNum = len(initMox)
     total_area = pointsNum * circle.calArea()
     return total_area
@@ -135,34 +137,48 @@ def doublePointsDistance(ix, iy, tx, ty):
 
 
 def overFlowDrop(xL, yL, R):
-    xDrop = np.delete(xL, np.where(xList.__abs__() > R))  #
-    yDrop = np.delete(yL, np.where(xList.__abs__() > R))
+    xDrop = np.delete(xL, np.where(xL.__abs__() > R))  #
+    yDrop = np.delete(yL, np.where(xL.__abs__() > R))
     return xDrop, yDrop
 
 
 # initXY是未旋转的初始坐标集合，twistXY是旋转后的坐标集合，两者计算overlap
 
+def randomcolor():
+    colorArr = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F']
+    color = ""
+    for i in range(6):
+        color += colorArr[random.randint(0, 14)]
+    return "#" + color
 
-def drawFig(x1, y1, x2, y2, angleTheta, r):
+
+def drawFig(x1, y1, x2, y2, angleTheta, r, set1):
     xIndex = np.linspace(-r, r, int(r))
-    plt.figure(figsize=(9, 8), edgecolor='black')
-    plt.subplot(111)
-    plt.scatter(x1, y1, 1, marker='.', color='green')
-    plt.scatter(x2, y2, 1, marker='.', color='blue')
+    plt.figure(figsize=(8, 8), edgecolor='black')
+    plt.xticks([])
+    plt.yticks([])
+    plt.scatter(x1, y1, 70, marker='.', color='green')
+    plt.scatter(x2, y2, 70, marker='.', color='blue')
     plt.plot(xIndex, f(xIndex, r), lw=1, color='red')
     plt.plot(xIndex, -f(xIndex, r), lw=1, color='red')
-    # plt.savefig('png/area_twist_%.3f°.png' % angleTheta, dpi=1000)
-    print('showed')  # , saved area_twist_%.3f°.png' % angleTheta)
+    plt.scatter(set1[:, 0], set1[:, 1], 60, marker='*', color='red')
+    plt.scatter(0, 0, 10, marker='*', color='black')
+    plt.savefig('png/aa_%.3f°.png' % angleTheta, dpi=500)
+    print('showed , saved area_twist_%.3f°.png' % angleTheta)
     plt.show()
 
 
 def drawOverLap(set1, set2, angleTheta):
-    plt.scatter(set1[:, 0], set1[:, 1], 15, marker='*', color='green')
-    plt.scatter(set2[:, 0], set2[:, 1], 5, marker='.', color='red')
+    plt.figure(figsize=(6, 6), edgecolor='black')
+    # plt.subplot(111)
+    # plt.axis('off')
+    plt.xticks([])
+    plt.yticks([])
+    plt.scatter(set2[:, 0], set2[:, 1], 70, color='green')
+    plt.scatter(set1[:, 0], set1[:, 1], 70, color='blue')
     plt.scatter(0, 0, 10, marker='*', color='black')
-    # plt.savefig('png/over_lap_%.2f°.png' % angleTheta, dpi=1000)
-    print('showed')  # saved over_lap_%.2f°.png' % angleTheta)
-    plt.show()
+    # plt.savefig('png/over_lap_%.2f°.png' % angleTheta, dpi=500)
+    # print('showed, saved over_lap_%.2f°.png' % angleTheta)
 
 
 def calEuclidean(s_1, s_2):
@@ -176,71 +192,245 @@ def calEuclidean(s_1, s_2):
     return index_S1, index_S2
 
 
+def calSelfDistance(s_1, s_2, s_3, s_4, a):
+    # s1 为列标，s2为行标，求s2内的点到s1中每个点最近的，就得取行最小值。
+    # SumArea写在此处
+    # print('overlap atoms:', s)
+    # print('all atoms:', len(s_1))
+    # print('ratio:', (6 / len(s_1)) * 100, '%')  # 这两个ratio其实是相似的
+    # print('ratio:', (s / t) * 100, '%')
+    # s = sumArea(s_3, s_4, bs=100)
+    # t = calTotal(s_1, bs=100)
+    # ratio = 100 * s / t
+    # resultDict[str(a)].append(s)
+    # resultDict[str(a)].append('%.6f' % ratio + '%')
+    dis1 = distance.cdist(s_1, [[0, 0]], 'euclidean')
+    dis2 = distance.cdist(s_2, [[0, 0]], 'euclidean')
+    tmpDict1, tmpDict2 = {}, {}
+    for h, j in zip(dis1, dis2):
+        if int(h) in tmpDict1:
+            tmpDict1[int(h)] += 1
+        else:
+            tmpDict1[int(h)] = 1
+        if int(j) in tmpDict2:
+            tmpDict2[int(j)] += 1
+        else:
+            tmpDict2[int(j)] = 1
+    for h in tmpDict1.keys():
+        tmpDict1[h] = np.where(np.trunc(dis1) == h)[0]
+    for h in tmpDict2.keys():
+        tmpDict2[h] = np.where(np.trunc(dis2) == h)[0]
+    drawArrow(s_1, s_2, tmpDict1, tmpDict2, a)
+    # distanceDict = {}
+    #     for k1, k2 in zip(tmpDict1.keys(), tmpDict2.keys()):
+    #         X1 = s_1[tmpDict1[k1][0]]
+    #         X2 = s_2[tmpDict2[k2][0]]
+    #         distanceDict[k1] = [calDoublePoint(X1[:1][0], X2[:1][0]), len(X1)]
+    #         # 存储形式：{k:[[number, calDistance(point1,point2), [point1.x, point1.y],[point2.x, point2.y]],···]}
+    #         # distanceDict[k1].append([i + 1, calDoublePoint(X1[j:j + 1][0], X2[j:j + 1][0]), X1[j:j + 1].tolist()[0],
+    #         #                          X2[j:j + 1].tolist()[0]])
+    #     # print(sorted(distanceDict.items(), key=lambda x: x[0]))
+    #     resultDict[str(a)].append(sorted(distanceDict.items(), key=lambda x: x[0]))
+    # 在此处加上几对几对原子len
+    # for i in sorted(distanceDict.items(), key=lambda x: x[0]):
+    #     pass
+    # print(dict(sorted(distanceDict.items(), key=lambda x: x[0])))  # 有学到一个新的排序方式
+
+
+def calAllDistance(s_1, s_2, cL, a):
+    dis1 = distance.cdist(s_1, [[0, 0]], 'euclidean')
+    dis2 = distance.cdist(s_2, [[0, 0]], 'euclidean')
+    index_S3, index_S4 = calEuclidean(s_1, s_2)
+    # df2 = pd.DataFrame(dis2)
+    # df2.to_excel('data/distance2.xlsx')
+    # print(angle, '>>cellLength[str(angle)]>>', cellLength[str(angle)])
+    tmpS1 = s_1[index_S3]
+    tmpS2 = s_2[index_S4]
+    dis3 = distance.cdist(tmpS1, [[0, 0]], 'euclidean').min(axis=1)
+    dis4 = distance.cdist(tmpS2, [[0, 0]], 'euclidean').min(axis=1)
+    index_S1 = np.where(dis1 <= cL[str(a)] + 7)  # 加70作为胞半径
+    index_S2 = np.where(dis2 <= cL[str(a)] + 7)
+    index_S5 = np.where(dis3 < cL[str(a)] + 7)
+    index_S6 = np.where(dis4 < cL[str(a)] + 7)
+    outS1, outS2, outS3, outS4 = s_1[index_S1[0]], s_2[index_S2[0]], tmpS1[index_S5], tmpS2[index_S6]
+    # out 1 2 是所有原子坐标，3 4是重叠的SuperCell坐标
+    calSelfDistance(outS1, outS2, outS3, outS4, a)
+
+
+def calDoublePoint(param, param1):
+    return ((param[0] - param1[0]) ** 2 + (param[1] - param1[1]) ** 2) ** 0.5
+
+
+def drawArrow(s_1, s_2, tD1, tD2, a):
+    # plt.figure(figsize=(8, 8), edgecolor='black')
+    # plt.xticks([])
+    # plt.yticks([])
+
+    for k1, k2 in zip(tD1.keys(), tD2.keys()):
+        X1 = s_1[tD1[k1]]
+        X2 = s_2[tD2[k2]]
+        for i in range(len(X1)):
+            c1 = randomcolor()
+            j = i
+            plt.arrow(X1[j:j + 1][0][0],
+                      X1[j:j + 1][0][1],
+                      X2[j:j + 1][0][0] - X1[j:j + 1][0][0],
+                      X2[j:j + 1][0][1] - X1[j:j + 1][0][1],
+                      width=0.5, head_width=20, head_length=20, overhang=0.9, color=c1)
+    # plt.scatter(s_1[:, 0], s_1[:, 1], color=randomcolor())
+    # plt.scatter(s_2[:, 0], s_2[:, 1], color=randomcolor())
+    # plt.plot(s_3[:, 0], s_3[:, 1], linestyle='--', color=randomcolor())
+    plt.scatter([0], [0], 20, marker='*', color='black')
+    # plt.savefig('png/arrow/%.2farrow.png' % a, dpi=800)
+    # plt.show()
+    # # sortIndex1 = np.argsort(dis1)
+    # # sortIndex2 = np.argsort(dis2)
+    # # df2 = pd.DataFrame(dis2)
+    # # df2.to_excel('data/%.2fdf2.xls' % a, index=True, header=True)
+
+
+def savePeakData():
+    titleList = ['edgeLength', 'midPerpendicular', 'overLapArea', 'overLapRatio', 'layers', 'span', 'arrowDistance',
+                 'atomsPair']
+    for k in resultDict:
+        resultDict[k].append(resultDict[k][0] * np.cos(np.pi / 6))
+    for k in cellLength.keys():
+        angle = float(k)
+        thetaAngle = np.pi * angle / 180.0
+        xTwist, yTwist = matrixTransformation(mox, moy, thetaAngle)
+        s1 = np.stack((mox, moy), axis=-1)
+        s2 = np.stack((xTwist, yTwist), axis=-1)
+        calAllDistance(s1, s2, angle)
+    book = xlwt.Workbook()  # 创建Excel
+    for k, v in resultDict.items():
+        sheet = book.add_sheet(k)
+        row = 0  # 行
+        col = 0  # 列
+        for t in titleList:
+            sheet.write(row, col, t)
+            col += 1
+        row += 1
+        col = 0
+        for j in range(4):
+            sheet.write(row, col, v[j])
+            col += 1
+        row -= 1  # 保持同一行
+        for vv in v[4]:
+            row += 1
+            col = 4
+            sheet.write(row, col, row)
+            col += 1
+            sheet.write(row, col, vv[0])
+            col += 1
+            sheet.write(row, col, vv[1][0])
+            col += 1
+            sheet.write(row, col, vv[1][1])
+    book.save('data/peakData.xls')
+
+
 if __name__ == '__main__':
     t1 = time.time()
     bs = 100
-    Super = 50
+    Super = 30
     xList, yList, zList, xMean, yMean = genGraphene(Super=Super, bs=bs)
     # 绘制圆
     x_Drop, y_Drop = overFlowDrop(xList, yList, yMean)  # 注意你删除的原子的方式
     r = yMean
     mox = np.delete(x_Drop, np.where(normXY(x_Drop, y_Drop) > r))
     moy = np.delete(y_Drop, np.where(normXY(x_Drop, y_Drop) > r))
-
     totalArea = calTotal(mox, bs=bs)
+    cellLength = {'6.01': 1354.862355, '7.34': 1109.275439, '9.43': 863.9236077, '13.17': 619.0864237,
+                  '15.18': 931.3409687, '16.43': 994.1971635, '17.9': 790.7793624, '21.79': 375.771207,
+                  '24.43': 1162.550644, '27.8': 512.0898359}
+    resultDict = {'6.01': [1354.862355], '7.34': [1109.275439], '9.43': [863.9236077], '13.17': [619.0864237],
+                  '15.18': [931.3409687], '16.43': [994.1971635], '17.9': [790.7793624], '21.79': [375.771207],
+                  '24.43': [1162.550644], '27.8': [512.0898359]}
+    # supercell的边长，因为是正六边形，也就是说边长就是胞心到角的距离。
+    # 先把到圆心等距的所有点找出来，一圈一圈，同距离的点在list中，list存在字典中
 
     # 下面部分可以定义一个写Excel的函数
-    book = xlwt.Workbook()  # 创建Excel
-    sheet = book.add_sheet('sheet1')
-    title = ['angle', 'over_lap_area', 'over_lap_number', 'over_lap_ratio']  # over_lap_number是多少对原子重叠
-    row = 0  # 行
-    col = 0  # 列
-    for t in title:
-        sheet.write(row, col, t)
-        col += 1
-    for i in range(0, 3600):
-        row += 1  # 行加一
-        col = 0  # 从第0列开始写
-        content = []  # 临时内容列表写入excel文件
-        angle = i * 0.1
-        thetaAngle = np.pi * angle / 180.0
-        xTwist, yTwist = matrixTransformation(mox, moy, thetaAngle)
-        s1 = np.stack((mox, moy), axis=-1)
-        s2 = np.stack((xTwist, yTwist), axis=-1)
-        indexS1, indexS2 = calEuclidean(s1, s2)
-        overLapArea = sumArea(s1[indexS1], s2[indexS2], bs=bs)
-        overLapRatio = overLapArea/totalArea
-        content.append(angle)
-        content.append(overLapArea)
-        content.append(len(indexS1[0]))
-        content.append(overLapRatio*100)
-        for j in content:
-            sheet.write(row, col, j)
-            col += 1
-    book.save('data/%dExpansion.xls' % Super)
-
-    # while True:
-    #     angle = float(input('请输入逆时针旋转角度：'))
-    #     if angle == 0.0:
-    #         break
+    # book = xlwt.Workbook()  # 创建Excel
+    #
+    # sheet = book.add_sheet('sheet1')
+    # title = ['size', 'over_lap_area', 'over_lap_number', 'over_lap_ratio']
+    # row = 0  # 行
+    # col = 0  # 列
+    # for t in title:
+    #     sheet.write(row, col, t)
+    #     col += 1
+    # for i in range(15, 360):  # range 范围是从15-360的扩胞，每次宝加一对于30°的overlap的影响
+    #     row += 1  # 行加一
+    #     col = 0  # 从第0列开始写
+    #     content = []  # 临时内容列表写入excel文件
+    #     thetaAngle = np.pi * 30.0 / 180.0
+    #     xList, yList, zList, xMean, yMean = genGraphene(Super=i, bs=bs)
+    #     # 绘制圆
+    #     x_Drop, y_Drop = overFlowDrop(xList, yList, yMean)  # 注意你删除的原子的方式
+    #     r = yMean
+    #     mox = np.delete(x_Drop, np.where(normXY(x_Drop, y_Drop) > r))
+    #     moy = np.delete(y_Drop, np.where(normXY(x_Drop, y_Drop) > r))
+    #     totalArea = calTotal(mox, bs=bs)
+    #     xTwist, yTwist = matrixTransformation(mox, moy, thetaAngle)
+    #     s1 = np.stack((mox, moy), axis=-1)
+    #     s2 = np.stack((xTwist, yTwist), axis=-1)
+    #     indexS1, indexS2 = calEuclidean(s1, s2)
+    #     overLapArea = sumArea(s1[indexS1], s2[indexS2], bs=bs)
+    #     overLapRatio = overLapArea / totalArea
+    #     content.append(i)
+    #     content.append(overLapArea)
+    #     content.append(len(indexS1[0]))
+    #     content.append(overLapRatio * 100)
+    #     for j in content:
+    #         sheet.write(row, col, j)
+    #         col += 1
+    # book.save('data/super X super_30°.xls')
+    # for i in range(0, 3600):
+    #     row += 1  # 行加一
+    #     col = 0  # 从第0列开始写
+    #     content = []  # 临时内容列表写入excel文件
+    #     angle = i * 0.1
     #     thetaAngle = np.pi * angle / 180.0
     #     xTwist, yTwist = matrixTransformation(mox, moy, thetaAngle)
     #     s1 = np.stack((mox, moy), axis=-1)
     #     s2 = np.stack((xTwist, yTwist), axis=-1)
     #     indexS1, indexS2 = calEuclidean(s1, s2)
-    #
-    #     # sortS1 = sorted(s1[indexS1], key=lambda s1_values: s1_values[0] + s1_values[1])
-    #     # sortS2 = sorted(s2[indexS2], key=lambda s2_values: s2_values[0] + s2_values[1])
-    #
     #     overLapArea = sumArea(s1[indexS1], s2[indexS2], bs=bs)
-    #     print('共%d对重叠' % (len(indexS1[0])), '重叠面积为%.6f' % overLapArea)
-    #     drawOverLap(s1[indexS1], s2[indexS2], angle)
-    #     # 计算加和、按坐标的x,y分别排序都不行。
-    #     # 下面一行为画circle twist
-    #     # drawFig(mox, moy, xTwist, yTwist, angle, yMean)
-    #     # drawFig(xList, yList)
+    #     overLapRatio = overLapArea/totalArea
+    #     content.append(angle)
+    #     content.append(overLapArea)
+    #     content.append(len(indexS1[0]))
+    #     content.append(overLapRatio*100)
+    #     for j in content:
+    #         sheet.write(row, col, j)
+    #         col += 1
+    # book.save('data/super_30°_0.01.xls')
+
+    # 根据PPT内容，我们获取数据的格式参考见“格式.txt”
+    while True:
+        inputAngle = input('请输入逆时针旋转角度：')
+        if not inputAngle.replace(".", '').isdigit():
+            break
+        angle = float(inputAngle)
+        print('start')
+        for k in cellLength.keys():
+            angle = float(k)
+            thetaAngle = np.pi * angle / 180.0
+            xTwist, yTwist = matrixTransformation(mox, moy, thetaAngle)
+            s1 = np.stack((mox, moy), axis=-1)
+            s2 = np.stack((xTwist, yTwist), axis=-1)
+            calAllDistance(s1, s2, cellLength, angle)
+    # sortS1 = sorted(s1[indexS1], key=lambda s1_values: s1_values[0] + s1_values[1])
+    # sortS2 = sorted(s2[indexS2], key=lambda s2_values: s2_values[0] + s2_values[1])
+    # drawFig(mox, moy, xTwist, yTwist, angle, yMean, s1[indexS1])
+    # overLapArea = sumArea(s1[indexS1], s2[indexS2], bs=bs)
+    # print('共%d对重叠' % (len(indexS1[0])), '重叠面积为%.6f' % overLapArea)
+    # drawOverLap(s1[indexS1], s2[indexS2], angle)
+    # 计算加和、按坐标的x,y分别排序都不行。
+    # 下面一行为画circle twist
+
+    # df = pd.DataFrame([mox, moy, xTwist, yTwist])
+    # df.to_excel('data/sample6.01-25.xlsx', index=False, header=False)
+    # print('save excel')
+    # drawFig(xList, yList)
     t2 = time.time()
     print('Finish, use time', t2 - t1, 's')
-# # 设置x y轴的长度为 1:1
-# ax = plt.gca()
-# ax.set_aspect(1)
