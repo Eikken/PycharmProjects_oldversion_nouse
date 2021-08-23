@@ -37,9 +37,10 @@ def getHypotenuse(a_, b_):
 spanLength = [142, 284, 375, 512, 568, 619, 710, 751, 790, 863, 931,
               994, 1024, 1109, 1136, 1162, 1213, 1238, 1262, 1354]
 
-cellLength = {'6.01': 1354.862355, '7.34': 1109.275439, '9.43': 863.9236077, '13.17': 619.0864237,
-              '15.18': 931.3409687, '16.43': 994.1971635, '17.9': 790.7793624, '21.79': 375.771207,
-              '24.43': 1162.550644, '27.8': 512.0898359}
+cellLength = {'6.01': 1354.862355, '7.34': 1109.275439, '9.43': 863.9236077, '10.42': 1354.8623546323813,
+              '11.64': 1213.4891841297963, '13.17': 619.0864237, '15.18': 931.3409687, '16.43': 994.1971635,
+              '17.9': 790.7793624, '21.79': 375.771207, '24.43': 1162.550644, '26.01': 1262.3739541039336,
+              '27.8': 512.0898359}
 
 # angle = map(float, cellLength)
 aa, l = [], []
@@ -64,39 +65,40 @@ c = a * 0.5
 d = 0.5 * CosineTheorem(a, 120)
 H = 71.0140831
 i = 1
-print(i, getHypotenuse(9*a+H, 3*d))
+print(i, getHypotenuse(9*a+H, 3*d))  # 1398.8152127536637
+print(i, getHypotenuse(9*a+H, d))  # 1354
 i += 1
 print(i, getHypotenuse(8*a+H, 3*d))  # 1262.3739539204103
 i += 1
-print(i, getHypotenuse(8*a, 4*d))
+print(i, getHypotenuse(8*a, 4*d))  # 1238
 i += 1
 print(i, getHypotenuse(8*a+H, d))  # 1213.4891839533805
 i += 1
 print(i, getHypotenuse(8*a, 2*d))  # 1162.550643889131
 i += 1
-print(i, 8*a)
+print(i, 8*a)  # 1136
 i += 1
-print(i, getHypotenuse(7*a, 4*d))
+print(i, getHypotenuse(7*a, 4*d))  # 1109
 i += 1
 print(i, getHypotenuse(7*a, 2*d))  # 1024.1796715884427
 i += 1
-print(i, 7*a)
+print(i, 7*a)  # 994
 i += 1
 print(i, getHypotenuse(6*a+H, d))  # 931.3409685758472
 i += 1
-print(i, getHypotenuse(5*a+H, 3*d))
+print(i, getHypotenuse(5*a+H, 3*d))  #863
 i += 1
 print(i, getHypotenuse(5*a+H, d))  # 790
 i += 1
 print(i, getHypotenuse(5*a, 2*d))  # 751
 i += 1
-print(i, 5*a)
+print(i, 5*a)  # 710
 i += 1
-print(i, getHypotenuse(4*a, 2*d))
+print(i, getHypotenuse(4*a, 2*d))  # 619
 i += 1
-print(i, 4*a)
+print(i, 4*a)  # 568
 i += 1
-print(i, getHypotenuse(3*a+H, d))
+print(i, getHypotenuse(3*a+H, d))   # 512
 # i += 1
 # print(i, getHypotenuse(2*a+H, d))  # 375.77120693174953
 i += 1

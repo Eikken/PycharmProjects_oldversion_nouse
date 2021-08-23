@@ -168,15 +168,17 @@ def drawFig(x1, y1, x2, y2, angleTheta, r, set1):
     plt.show()
 
 
-def drawOverLap(set1, set2, angleTheta):
-    plt.figure(figsize=(6, 6), edgecolor='black')
+def drawOverLap(set1, set2, set3, angleTheta):
+    plt.figure(figsize=(10, 10), edgecolor='black')
     # plt.subplot(111)
     # plt.axis('off')
     plt.xticks([])
     plt.yticks([])
-    plt.scatter(set2[:, 0], set2[:, 1], 70, color='green')
-    plt.scatter(set1[:, 0], set1[:, 1], 70, color='blue')
+    plt.scatter(set1[:, 0], set1[:, 1], color='blue')
+    plt.scatter(set2[:, 0], set2[:, 1], color='green')
+    plt.scatter(set3[:, 0], set3[:, 1], 50, marker='*', color='red')
     plt.scatter(0, 0, 10, marker='*', color='black')
+    plt.show()
     # plt.savefig('png/over_lap_%.2f°.png' % angleTheta, dpi=500)
     # print('showed, saved over_lap_%.2f°.png' % angleTheta)
 
@@ -185,8 +187,8 @@ def calEuclidean(s_1, s_2):
     # s1 为列标，s2为行标，求s2内的点到s1中每个点最近的，就得取行最小值。
     dis1 = distance.cdist(s_1, s_2, 'euclidean').min(axis=1)
     dis2 = distance.cdist(s_1, s_2, 'euclidean').min(axis=0)
-    index_S1 = np.where(dis1 < 14)
-    index_S2 = np.where(dis2 < 14)
+    index_S1 = np.where(dis1 < 3)
+    index_S2 = np.where(dis2 < 3)
     # df = pd.DataFrame(distance.cdist(s1, s2, 'euclidean')) # 数据转Excel
     # df.to_excel('data/%.3f°distance.xlsx'%angle, index=True, header=True)
     return index_S1, index_S2
@@ -199,11 +201,11 @@ def calSelfDistance(s_1, s_2, s_3, s_4, a):
     # print('all atoms:', len(s_1))
     # print('ratio:', (6 / len(s_1)) * 100, '%')  # 这两个ratio其实是相似的
     # print('ratio:', (s / t) * 100, '%')
-    # s = sumArea(s_3, s_4, bs=100)
-    # t = calTotal(s_1, bs=100)
-    # ratio = 100 * s / t
-    # resultDict[str(a)].append(s)
-    # resultDict[str(a)].append('%.6f' % ratio + '%')
+    s = sumArea(s_3, s_4, bs=100)
+    t = calTotal(s_1, bs=100)
+    ratio = 100 * s / t
+    resultDict[str(a)].append(s)
+    resultDict[str(a)].append('%.6f' % ratio + '%')
     dis1 = distance.cdist(s_1, [[0, 0]], 'euclidean')
     dis2 = distance.cdist(s_2, [[0, 0]], 'euclidean')
     tmpDict1, tmpDict2 = {}, {}
@@ -220,17 +222,18 @@ def calSelfDistance(s_1, s_2, s_3, s_4, a):
         tmpDict1[h] = np.where(np.trunc(dis1) == h)[0]
     for h in tmpDict2.keys():
         tmpDict2[h] = np.where(np.trunc(dis2) == h)[0]
-    drawArrow(s_1, s_2, tmpDict1, tmpDict2, a)
-    # distanceDict = {}
-    #     for k1, k2 in zip(tmpDict1.keys(), tmpDict2.keys()):
-    #         X1 = s_1[tmpDict1[k1][0]]
-    #         X2 = s_2[tmpDict2[k2][0]]
-    #         distanceDict[k1] = [calDoublePoint(X1[:1][0], X2[:1][0]), len(X1)]
-    #         # 存储形式：{k:[[number, calDistance(point1,point2), [point1.x, point1.y],[point2.x, point2.y]],···]}
-    #         # distanceDict[k1].append([i + 1, calDoublePoint(X1[j:j + 1][0], X2[j:j + 1][0]), X1[j:j + 1].tolist()[0],
-    #         #                          X2[j:j + 1].tolist()[0]])
-    #     # print(sorted(distanceDict.items(), key=lambda x: x[0]))
-    #     resultDict[str(a)].append(sorted(distanceDict.items(), key=lambda x: x[0]))
+    # drawArrow(s_1, s_2, tmpDict1, tmpDict2, a)
+    distanceDict = {}
+    for k1, k2 in zip(tmpDict1.keys(), tmpDict2.keys()):
+        X1 = s_1[tmpDict1[k1][0]]
+        X2 = s_2[tmpDict2[k2][0]]
+        distanceDict[k1] = [calDoublePoint(X1, X2), len(tmpDict1[k1])]
+        # 存储形式：{k:[[number, calDistance(point1,point2), [point1.x, point1.y],[point2.x, point2.y]],···]}
+        # for j in range(len(X1)):
+        # distanceDict[k1].append([calDoublePoint(X1, X2), X1[j:j + 1].tolist(),
+        #                          X2[j:j + 1].tolist()])
+    # print(sorted(distanceDict.items(), key=lambda x: x[0]))
+    resultDict[str(a)].append(sorted(distanceDict.items(), key=lambda x: x[0]))
     # 在此处加上几对几对原子len
     # for i in sorted(distanceDict.items(), key=lambda x: x[0]):
     #     pass
@@ -241,19 +244,21 @@ def calAllDistance(s_1, s_2, cL, a):
     dis1 = distance.cdist(s_1, [[0, 0]], 'euclidean')
     dis2 = distance.cdist(s_2, [[0, 0]], 'euclidean')
     index_S3, index_S4 = calEuclidean(s_1, s_2)
-    # df2 = pd.DataFrame(dis2)
-    # df2.to_excel('data/distance2.xlsx')
-    # print(angle, '>>cellLength[str(angle)]>>', cellLength[str(angle)])
     tmpS1 = s_1[index_S3]
     tmpS2 = s_2[index_S4]
     dis3 = distance.cdist(tmpS1, [[0, 0]], 'euclidean').min(axis=1)
     dis4 = distance.cdist(tmpS2, [[0, 0]], 'euclidean').min(axis=1)
+    # index_S1 = np.where(dis1 <= r)  # 加70作为胞半径
+    # index_S2 = np.where(dis2 <= r)
+    # index_S5 = np.where(dis3 < r)
+    # index_S6 = np.where(dis4 < r)
     index_S1 = np.where(dis1 <= cL[str(a)] + 7)  # 加70作为胞半径
     index_S2 = np.where(dis2 <= cL[str(a)] + 7)
     index_S5 = np.where(dis3 < cL[str(a)] + 7)
     index_S6 = np.where(dis4 < cL[str(a)] + 7)
     outS1, outS2, outS3, outS4 = s_1[index_S1[0]], s_2[index_S2[0]], tmpS1[index_S5], tmpS2[index_S6]
     # out 1 2 是所有原子坐标，3 4是重叠的SuperCell坐标
+    # return outS1, outS2, outS3, outS4
     calSelfDistance(outS1, outS2, outS3, outS4, a)
 
 
@@ -262,10 +267,6 @@ def calDoublePoint(param, param1):
 
 
 def drawArrow(s_1, s_2, tD1, tD2, a):
-    # plt.figure(figsize=(8, 8), edgecolor='black')
-    # plt.xticks([])
-    # plt.yticks([])
-
     for k1, k2 in zip(tD1.keys(), tD2.keys()):
         X1 = s_1[tD1[k1]]
         X2 = s_2[tD2[k2]]
@@ -300,7 +301,7 @@ def savePeakData():
         xTwist, yTwist = matrixTransformation(mox, moy, thetaAngle)
         s1 = np.stack((mox, moy), axis=-1)
         s2 = np.stack((xTwist, yTwist), axis=-1)
-        calAllDistance(s1, s2, angle)
+        calAllDistance(s1, s2, cellLength, angle)
     book = xlwt.Workbook()  # 创建Excel
     for k, v in resultDict.items():
         sheet = book.add_sheet(k)
@@ -325,13 +326,29 @@ def savePeakData():
             sheet.write(row, col, vv[1][0])
             col += 1
             sheet.write(row, col, vv[1][1])
-    book.save('data/peakData.xls')
+    book.save('data/peak_data_14.xls')
+
+
+def calDistance(s_1, s_2, a):
+    dis1 = distance.cdist(s_1, [[0, 0]], 'euclidean')
+    dis2 = distance.cdist(s_2, [[0, 0]], 'euclidean')
+    index_S3, index_S4 = calEuclidean(s_1, s_2)
+    tmpS1 = s_1[index_S3]
+    tmpS2 = s_2[index_S4]
+    dis3 = distance.cdist(tmpS1, [[0, 0]], 'euclidean').min(axis=1)
+    dis4 = distance.cdist(tmpS2, [[0, 0]], 'euclidean').min(axis=1)
+    index_S1 = np.where(dis1 <= r)
+    index_S2 = np.where(dis2 <= r)
+    index_S5 = np.where(dis3 < r)
+    index_S6 = np.where(dis4 < r)
+    outS1, outS2, outS3, outS4 = s_1[index_S1[0]], s_2[index_S2[0]], tmpS1[index_S5], tmpS2[index_S6]
+    return outS1, outS2, outS3, outS4
 
 
 if __name__ == '__main__':
     t1 = time.time()
     bs = 100
-    Super = 30
+    Super = 40
     xList, yList, zList, xMean, yMean = genGraphene(Super=Super, bs=bs)
     # 绘制圆
     x_Drop, y_Drop = overFlowDrop(xList, yList, yMean)  # 注意你删除的原子的方式
@@ -339,15 +356,18 @@ if __name__ == '__main__':
     mox = np.delete(x_Drop, np.where(normXY(x_Drop, y_Drop) > r))
     moy = np.delete(y_Drop, np.where(normXY(x_Drop, y_Drop) > r))
     totalArea = calTotal(mox, bs=bs)
-    cellLength = {'6.01': 1354.862355, '7.34': 1109.275439, '9.43': 863.9236077, '13.17': 619.0864237,
-                  '15.18': 931.3409687, '16.43': 994.1971635, '17.9': 790.7793624, '21.79': 375.771207,
-                  '24.43': 1162.550644, '27.8': 512.0898359}
-    resultDict = {'6.01': [1354.862355], '7.34': [1109.275439], '9.43': [863.9236077], '13.17': [619.0864237],
-                  '15.18': [931.3409687], '16.43': [994.1971635], '17.9': [790.7793624], '21.79': [375.771207],
-                  '24.43': [1162.550644], '27.8': [512.0898359]}
+    cellLength = {'6.01': 1354.862355, '7.34': 1109.275439, '9.43': 863.9236077, '10.42': 1354.8623546323813,
+                  '11.64': 1213.4891841297963, '13.17': 619.0864237, '15.18': 931.3409687, '16.43': 994.1971635,
+                  '17.9': 790.7793624, '21.79': 375.771207, '24.43': 1162.550644, '26.01': 1262.3739541039336,
+                  '27.8': 512.0898359, '29.41': 1398.815212957022}
+    resultDict = {'6.01': [1354.862355], '7.34': [1109.275439], '9.43': [863.9236077], '10.42': [1354.8623546323813],
+                  '11.64': [1213.4891841297963], '13.17': [619.0864237], '15.18': [931.3409687], '16.43': [994.1971635],
+                  '17.9': [790.7793624], '21.79': [375.771207], '24.43': [1162.550644], '26.01': [1262.3739541039336],
+                  '27.8': [512.0898359], '29.41': [1398.815212957022]}
+
     # supercell的边长，因为是正六边形，也就是说边长就是胞心到角的距离。
     # 先把到圆心等距的所有点找出来，一圈一圈，同距离的点在list中，list存在字典中
-
+    # savePeakData()
     # 下面部分可以定义一个写Excel的函数
     # book = xlwt.Workbook()  # 创建Excel
     #
@@ -405,32 +425,33 @@ if __name__ == '__main__':
     #         col += 1
     # book.save('data/super_30°_0.01.xls')
 
-    # 根据PPT内容，我们获取数据的格式参考见“格式.txt”
-    while True:
-        inputAngle = input('请输入逆时针旋转角度：')
-        if not inputAngle.replace(".", '').isdigit():
-            break
-        angle = float(inputAngle)
-        print('start')
-        for k in cellLength.keys():
-            angle = float(k)
-            thetaAngle = np.pi * angle / 180.0
-            xTwist, yTwist = matrixTransformation(mox, moy, thetaAngle)
-            s1 = np.stack((mox, moy), axis=-1)
-            s2 = np.stack((xTwist, yTwist), axis=-1)
-            calAllDistance(s1, s2, cellLength, angle)
+    # # 根据PPT内容，我们获取数据的格式参考见“格式.txt”
+    # while True:
+    #     inputAngle = input('请输入逆时针旋转角度：')
+    #     if not inputAngle.replace(".", '').isdigit():
+    #         break
+    #     angle = float(inputAngle)
+    #     # print('start')
+    #     # for k in cellLength.keys():
+    #     #     angle = float(k)
+    #     thetaAngle = np.pi * angle / 180.0
+    #     xTwist, yTwist = matrixTransformation(mox, moy, thetaAngle)
+    #     s1 = np.stack((mox, moy), axis=-1)
+    #     s2 = np.stack((xTwist, yTwist), axis=-1)
+    #     out_S1, out_S2, out_S3, out_S4 = calDistance(s1, s2, angle)
+    #     drawOverLap(out_S1, out_S2, out_S3, angle)
+        # calAllDistance(s1, s2, cellLength, angle)
+        # plt.show()
     # sortS1 = sorted(s1[indexS1], key=lambda s1_values: s1_values[0] + s1_values[1])
     # sortS2 = sorted(s2[indexS2], key=lambda s2_values: s2_values[0] + s2_values[1])
-    # drawFig(mox, moy, xTwist, yTwist, angle, yMean, s1[indexS1])
+    #     drawFig(mox, moy, xTwist, yTwist, angle, yMean, s1[indexS1])
     # overLapArea = sumArea(s1[indexS1], s2[indexS2], bs=bs)
     # print('共%d对重叠' % (len(indexS1[0])), '重叠面积为%.6f' % overLapArea)
-    # drawOverLap(s1[indexS1], s2[indexS2], angle)
+
     # 计算加和、按坐标的x,y分别排序都不行。
     # 下面一行为画circle twist
 
     # df = pd.DataFrame([mox, moy, xTwist, yTwist])
     # df.to_excel('data/sample6.01-25.xlsx', index=False, header=False)
-    # print('save excel')
-    # drawFig(xList, yList)
-    t2 = time.time()
-    print('Finish, use time', t2 - t1, 's')
+    # t2 = time.time()
+    # print('Finish, use time', t2 - t1, 's')
