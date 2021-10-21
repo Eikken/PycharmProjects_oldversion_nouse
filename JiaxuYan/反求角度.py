@@ -33,8 +33,10 @@ if __name__ == '__main__':
     a = 142.0  # 281662
     a2 = 246
     b = 142.0281662 * np.cos(np.deg2rad(30))
-    d = 0.5 * CosineTheorem(a, 120)
+    d = 0.5 * CosineTheorem(a, 120)    # 单个石墨烯内一条边上的高
     # print(getTheta(2*l1, 2*l1)) # print(getTheta(l1, l1))  # 60.00
     # print(getTheta(751, 2*a))  # 21.798340810544445
     # print(getTheta(1024, 4 * d))  # 27.795123516182407
+    print(d)
+    print(60 - getTheta(3601.47, 8 * d))
     print(60 - getTheta(1238, 8 * d))  # 13.176464941518184

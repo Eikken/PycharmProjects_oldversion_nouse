@@ -29,6 +29,7 @@ def getLm(a_, theta_, m_n=1):
     else:
         return m_n * a_ / (2 * (np.sin(theta_ / 2.0)))
 
+
 if __name__ == '__main__':
     # dataSet = getData()['邻位142'].dropna()
     title = ['邻位142', '间位246', '对位284']
@@ -38,8 +39,10 @@ if __name__ == '__main__':
     plt.rcParams['axes.unicode_minus'] = False
     xRange = np.linspace(1, 30, 290)
     y142 = getLm(142, xRange)
+
     y246 = getLm(246, xRange)
     y284 = getLm(142, xRange, 2)
+    y426 = getLm(142, xRange, 3)
     y492 = getLm(246, xRange, 2)
     y568 = getLm(142, xRange, 4)
     y710 = getLm(142, xRange, 5)
@@ -50,7 +53,7 @@ if __name__ == '__main__':
             sp = dataSet[i].split(',')
             dataList[i][0] = sp[0]
             dataList[i][1] = sp[1]
-        plt.scatter(dataList[:, 0], dataList[:, 1], marker='.', label=float(t[2:5]))
+        plt.scatter(dataList[:, 0], dataList[:, 1], marker='.', label=t[2:5])
 
     for t in beiwei:
         dataSet = getData()[t].dropna()
@@ -72,15 +75,16 @@ if __name__ == '__main__':
             else:
                 dictLength[i[2]] = np.array([[i[0], i[1]]])
         for k, v in dictLength.items():
-            plt.scatter(v[:, 0], v[:, 1], marker='.', label=k)
+            plt.scatter(v[:, 0], v[:, 1], marker='.', label=int(k))
         # plt.title('倍位246')
-    plt.plot(xRange[2:], y142[2:], label='142.0')
-    plt.plot(xRange[10:], y246[10:], label='246.0')
-    plt.plot(xRange[30:], y284[30:], label='284.0')
-    plt.plot(xRange[100:], y492[100:], label='492.0')
-    plt.plot(xRange[130:], y568[130:], label='568.0')
-    plt.plot(xRange[70:], y710[70:], label='710.0')
+    plt.plot(xRange[2:], y142[2:], label='142')
+    plt.plot(xRange[10:], y246[10:], label='246')
+    plt.plot(xRange[30:], y284[30:], label='284')
+    plt.plot(xRange[30:], y426[30:], label='426')
+    plt.plot(xRange[100:], y492[100:], label='492')
+    plt.plot(xRange[130:], y568[130:], label='568')
+    plt.plot(xRange[70:], y710[70:], label='710')
     plt.title('距离合集')
-    plt.legend()
+    plt.legend(loc=1)
     plt.show()
     print('finish')

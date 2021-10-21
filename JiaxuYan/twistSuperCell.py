@@ -33,7 +33,7 @@ def findCellCenter(s_1, s_2, a):
     index_S3, index_S4 = calEuclidean(s_1, s_2)
     tmpS1 = s_1[index_S3]
     tmpS2 = s_2[index_S4]
-    coe = 2.64575
+    coe = 1.0  # coe = 2.64575
     G3 = 3 ** 0.5
     dis1 = distance.cdist(s_1, [[0, 0]], 'euclidean')
     dis2 = distance.cdist(s_2, [[0, 0]], 'euclidean')
@@ -110,11 +110,11 @@ def findCellCenter(s_1, s_2, a):
         #     print(num, len(tmpDict1[k1]) == len((tmpDict2[k2])),
         #           k1, '>>', len(tmpDict1[k1]), '\t', k2, '>>', len(tmpDict2[k2]))
         #     num += 1
-        drawArrow(s_1, s_2, sortDict1, sortDict2, a)
+        drawArrow(s_1, s_2, tmpOutS1, sortDict1, sortDict2, a)
         # plt.scatter(tmpOutS1[:, 0], tmpOutS1[:, 1], color=randomcolor())
         # plt.scatter(tmpOutS2[:, 0], tmpOutS2[:, 1], color=randomcolor())
         # break
-    plt.savefig('png/bigArrow/Arrow_%.2f.png' % a)
+    # plt.savefig('png/bigArrow/Arrow_%.2f.png' % a)
     print('save fig %.2f' % a)
 
 
@@ -149,9 +149,11 @@ if __name__ == '__main__':
     r = yMean
     mox = np.delete(x_Drop, np.where(normXY(x_Drop, y_Drop) > r))
     moy = np.delete(y_Drop, np.where(normXY(x_Drop, y_Drop) > r))
-    cellLength = {'6.01': 1354.862355, '7.34': 1109.275439, '9.43': 863.9236077, '13.17': 619.0864237,
-                  '15.18': 931.3409687, '16.43': 994.1971635, '17.9': 790.7793624, '21.79': 375.771207,
-                  '24.43': 1162.550644, '27.8': 512.0898359}
+    cellLength = {'6.01': 1354.862355, '7.34': 1109.275439, '9.43': 863.9236077, '10.42': 1354.8623546323813,
+                  '11.64': 1213.4891841297963, '13.17': 619.0864237, '15.18': 931.3409687, '16.43': 994.1971635,
+                  '17.9': 790.7793624, '21.79': 375.771207, '24.43': 1162.550644, '26.01': 1262.3739541039336,
+                  '27.8': 512.0898359}
+    dd = {'7.34': 1109.275439,  '13.17': 619.0864237}
     # while True:
     # inputAngle = input('请输入逆时针旋转角度：')
     # if not inputAngle.replace(".", '').isdigit():
@@ -159,7 +161,7 @@ if __name__ == '__main__':
     # angle = float(inputAngle)
     # x3, y3 = eval(input("\n请输入已知任意对称点X,Y坐标:"))
     print('start')
-    for k in cellLength.keys():
+    for k in dd.keys():
         angle = float(k)
         thetaAngle = np.pi * angle / 180.0
         xTwist, yTwist = matrixTransformation(mox, moy, thetaAngle)
